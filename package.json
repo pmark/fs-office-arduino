@@ -36,9 +36,12 @@
     "url": "https://github.com/ajfisher/node-pixel/issues"
   },
   "dependencies": {
+    "async": "^0.9.0",
     "color-string": "^0.2.4",
     "es6-collections": "^0.4.0",
     "firmata": "^0.4.0",
-    "johnny-five": "^0.8.36"
+    "johnny-five": "^0.8.36",
+    "nconf": "^0.7.1",
+    "superagent": "^1.1.0"
   }
 }
