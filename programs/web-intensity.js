@@ -9,29 +9,52 @@ var board = new five.Board(opts);
 var strip = null;
 
 var Intensity = require('./insights-intensity');
-var intensityNeutralityThreshold = 0.05;
 
 var MaxColor = 255;
 var MaxIntensity = 2.0;
-var MinIntensity = 0.1;
+var MinIntensity = 0.0;
 
 var Colors = {
-	neutral: {
-		red: 255,
-		green: 255,
-		blue: 204
-	},
-	cold: {
+	cold: { // dark blue
 		red: 0,
 		green: 0,
-		blue: (MaxColor / MaxIntensity)
+		blue: 204
 	},
-	hot: {
-		red: (MaxColor / MaxIntensity),
+	cool: { // turquoise
+		red: 0,
+		green: 204,
+		blue: 204
+	},
+	neutral: { // white
+		red: MaxColor,
+		green: MaxColor,
+		blue: MaxColor
+	},
+	warm: { // yellow
+		red: MaxColor,
+		green: MaxColor,
+		blue: 153
+	},
+	hot: { // orange
+		red: MaxColor,
+		green: 128,
+		blue: 0
+	}	
+};
+
+var currentMarker = 0;
+var MarkerPixelColors = [
+	{ 
+		red: 0,
 		green: 0,
 		blue: 0
+	},
+	{ 
+		red: MaxColor,
+		green: 102,
+		blue: 178
 	}
-};
+];
 
 var web3hIntensity = new Intensity("ConsumerRequest", 3);
 
@@ -43,22 +66,26 @@ function renderCurrentIntensity() {
 		else {
 			console.log("web3hIntensity:", intensity);
 
-			var currentStripColor;
+			intensity = Math.max(intensity, MinIntensity);
+			intensity = Math.min(intensity, MaxIntensity);
+			intensity /= 2.0;
+			// intensity is between 0 and 1
 
-			if (intensity < -intensityNeutralityThreshold) {
-				currentStripColor = rgb(colorDiff(Colors.cold, Colors.neutral, intensity));
-			}
-			else if (intensity > intensityNeutralityThreshold) {
-				currentStripColor = rgb(colorDiff(Colors.hot, Colors.neutral, intensity));
-			}
-			else {
-				currentStripColor = rgb(colorDiff(Colors.neutral, Colors.neutral, intensity));
-			}
+			var colorKeys = Object.keys(Colors);
+			var colorIndex = colorKeys.length * intensity;
+			var currentColorKey = colorKeys[colorIndex];
+			var currentStripColor = Colors[currentColorKey];
 
-			console.log("setting color:", currentStripColor);
-
+			console.log("intensity:", intensity, "setting color:", currentStripColor);
 			strip.color(currentStripColor);
+
+			var markerPixel = parseInt(strip.stripLength() * intensity);
+			strip.pixel(markerPixel, rgb(MarkerPixelColors[currentMarker++]));
 			strip.show();
+
+			if (currentMarker > 1) {
+				currentMarker = 0;
+			}
 		}
 	});
 }
@@ -73,7 +100,6 @@ board.on("ready", function() {
 		board: this
 	});
 
-
 	setInterval(renderCurrentIntensity, 60000);
 	renderCurrentIntensity();
 });
@@ -82,15 +108,6 @@ function rgb(color) {
 	return "rgb(" + [parseInt(color.red), parseInt(color.green), parseInt(color.blue)].join(',') + ")";
 }
 
-// Somewhere between max red and max neutral. 
-// 
-function colorDiff(c1, c2, scale) {
-	return {
-		red: Math.abs(c1.red - c2.red) * scale,
-		green: Math.abs(c1.green / c2.green) * scale,
-		blue: Math.abs(c1.blue / c2.blue) * scale
-	};
-}
 
 
-
+renderCurrentIntensity();
