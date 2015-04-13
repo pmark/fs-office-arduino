@@ -11,7 +11,7 @@ var strip = null;
 var Intensity = require('./insights-intensity');
 
 var MaxColor = 255;
-var MaxIntensity = 2.0;
+var MaxIntensity = 2.25;
 var MinIntensity = 0.0;
 
 var Colors = [
@@ -25,19 +25,19 @@ var Colors = [
 		green: 204,
 		blue: 204
 	},
-	{ // neutral: white
-		red: MaxColor,
-		green: MaxColor,
-		blue: MaxColor
+	{ // neutral: green
+		red: 0,
+		green: MaxColor / 2,
+		blue: 0
 	},
 	{ // warm: yellow
 		red: MaxColor,
 		green: MaxColor,
-		blue: 153
+		blue: 0
 	},
-	{ // hot: orange
-		red: MaxColor,
-		green: 128,
+	{ // hot: reddish
+		red: 255,
+		green: 140,
 		blue: 0
 	}	
 ];
@@ -71,16 +71,15 @@ return;
 
 			intensity = Math.max(intensity, MinIntensity);
 			intensity = Math.min(intensity, MaxIntensity);
-			intensity /= 2.0;
+			intensity /= (MaxIntensity - MinIntensity);
 			// intensity is between 0 and 1
 
 			// Pick color from 0 - 4 given 0 - 1
 	
-			var colorIndex = parseInt((Colors.length-1) * intensity);
-console.log("colorIndex:", colorIndex);
+			var colorIndex = parseInt(Math.round((Colors.length-1) * intensity));
 			var currentStripColor = Colors[colorIndex];
 
-			console.log("intensity:", intensity, "setting color:", currentStripColor);
+			console.log("intensity normalized:", intensity, "setting color:", currentStripColor);
 			strip.color(rgb(currentStripColor));
 
 			var markerPixel = parseInt((strip.stripLength()-1) * intensity);
