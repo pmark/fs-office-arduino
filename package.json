@@ -41,6 +41,7 @@
     "es6-collections": "^0.4.0",
     "firmata": "^0.4.0",
     "johnny-five": "^0.8.36",
+    "moment": "^2.10.2",
     "nconf": "^0.7.1",
     "superagent": "^1.1.0"
   }

@@ -1,6 +1,7 @@
 "use strict";
 var five = require("johnny-five");
 var pixel = require("../lib/pixel.js");
+var moment = require("moment");
 
 var opts = {};
 opts.port = process.argv[2] || "";
@@ -13,6 +14,8 @@ var Intensity = require('./insights-intensity');
 var MaxColor = 255;
 var MaxIntensity = 2.25;
 var MinIntensity = 0.0;
+var motionDetectedAt = null;
+var MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES = 1;
 
 var Colors = [
 	{ // cold: dark blue
@@ -59,9 +62,16 @@ var MarkerPixelColors = [
 var web3hIntensity = new Intensity("ConsumerRequest", 3);
 
 function renderCurrentIntensity() {
-if (!strip) {
-return;
-}
+	if (!strip) {
+		return;
+	}
+
+	if (moment().diff(motionDetectedAt, 'minutes') > MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES) {
+		strip.color(rgb({red:0, green:0, black:0}));
+		strip.show();
+		return;
+	}
+
 	web3hIntensity.currentRelativeIntensity(function(err, intensity) {
 		if (err) {
 			console.log("error:", err);
@@ -116,6 +126,28 @@ board.on("ready", function() {
 		board: this
 	});
 
+	// Pin only
+	var motion = new five.IR.Motion(7);
+
+	// "calibrated" occurs once, at the beginning of a session,
+	motion.on("calibrated", function() {
+	  console.log("motion sensor calibrated");
+	});
+
+	// "motionstart" events are fired when the "calibrated"
+	// proximal area is disrupted, generally by some form of movement
+	motion.on("motionstart", function() {
+	  console.log("motionstart");
+	  motionDetectedAt = moment();
+	});
+
+	// "motionend" events are fired following a "motionstart" event
+	// when no movement has occurred in X ms
+	motion.on("motionend", function() {
+	  console.log("motionend");
+	});
+
+
 	setInterval(renderCurrentIntensity, 60000);
 	renderCurrentIntensity();
 });
@@ -124,6 +156,3 @@ function rgb(color) {
 	return "rgb(" + [parseInt(color.red), parseInt(color.green), parseInt(color.blue)].join(',') + ")";
 }
 
-
-
-renderCurrentIntensity();
