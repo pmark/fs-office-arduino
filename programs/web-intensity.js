@@ -3,19 +3,24 @@ var five = require("johnny-five");
 var pixel = require("../lib/pixel.js");
 var moment = require("moment");
 
+var WebIntensity = {
+
+};
+module.exports = WebIntensity;
+
 var opts = {};
 opts.port = process.argv[2] || "";
 
 var board = new five.Board(opts);
 var strip = null;
 
-var Intensity = require('./insights-intensity');
+var Intensity = require('../lib/insights-intensity');
 
 var MaxColor = 255;
 var MaxIntensity = 2.5;
 var MinIntensity = 0.0;
-var motionDetectedAt = null;
-var MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES = 2;
+// var motionDetectedAt = null;
+// var MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES = 2;
 
 var Colors = [
 	{ // cold: dark blue
@@ -45,19 +50,11 @@ var Colors = [
 	}	
 ];
 
-var currentMarker = 0;
-var MarkerPixelColors = [
-	{ 
-		red: MaxColor,
-		green: MaxColor,
-		blue: MaxColor
-	},
-	{ 
-		red: MaxColor,
-		green: MaxColor,
-		blue: MaxColor
-	}
-];
+var MarkerPixelColor = { 
+	red: MaxColor,
+	green: MaxColor,
+	blue: MaxColor
+};
 
 var webIntensity = new Intensity("ConsumerRequest", 1);
 
@@ -97,18 +94,14 @@ function renderCurrentIntensity() {
 			strip.color(rgb(currentStripColor));
 
 			var markerPixel = parseInt((strip.stripLength()-1) * intensity);
-			var markerColor = MarkerPixelColors[currentMarker++];
+			var markerColor = MarkerPixelColor;
 
 			console.log("setting marker at", markerPixel, markerColor);
-			setPixel(markerPixel-1, rgb(markerColor));
+			setPixel(markerPixel-1, rgb(blendColor(markerColor, currentStripColor)));
 			setPixel(markerPixel, rgb(markerColor));
-			setPixel(markerPixel+1, rgb(markerColor));
+			setPixel(markerPixel+1, rgb(blendColor(markerColor, currentStripColor)));
 
 			strip.show();
-
-			if (currentMarker > 1) {
-				currentMarker = 0;
-			}
 		}
 	});
 }
@@ -158,5 +151,17 @@ board.on("ready", function() {
 
 function rgb(color) {
 	return "rgb(" + [parseInt(color.red), parseInt(color.green), parseInt(color.blue)].join(',') + ")";
+}
+
+function blendColor(color1, color2) {
+	return {
+		red: blendSingleColor(color1.red, color2.red),
+		green: blendSingleColor(color1.green, color2.green),
+		blue: blendSingleColor(color1.blue, color2.blue)
+	};
+}
+
+function blendSingleColor(c1, c2) {
+	return (c1 / 2) + (c2 / 2);
 }
 
