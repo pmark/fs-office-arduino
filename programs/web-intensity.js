@@ -12,10 +12,10 @@ var strip = null;
 var Intensity = require('./insights-intensity');
 
 var MaxColor = 255;
-var MaxIntensity = 2.25;
+var MaxIntensity = 2.5;
 var MinIntensity = 0.0;
 var motionDetectedAt = null;
-var MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES = 1;
+var MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES = 2;
 
 var Colors = [
 	{ // cold: dark blue
@@ -59,25 +59,29 @@ var MarkerPixelColors = [
 	}
 ];
 
-var web3hIntensity = new Intensity("ConsumerRequest", 3);
+var webIntensity = new Intensity("ConsumerRequest", 1);
 
 function renderCurrentIntensity() {
 	if (!strip) {
 		return;
 	}
 
-	if (moment().diff(motionDetectedAt, 'minutes') > MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES) {
-		strip.color(rgb({red:0, green:0, black:0}));
+/*
+	var minutesSinceMotion = moment().diff(motionDetectedAt, 'minutes');
+	console.log("minutes since motion:", minutesSinceMotion);
+	if (minutesSinceMotion > MOTION_DETECTION_TIME_INTERVAL_THRESHOLD_MINUTES) {
+		strip.color(rgb({red:0, green:0, blue:0}));
 		strip.show();
 		return;
 	}
+*/
 
-	web3hIntensity.currentRelativeIntensity(function(err, intensity) {
+	webIntensity.currentRelativeIntensity(function(err, intensity) {
 		if (err) {
 			console.log("error:", err);
 		}
 		else {
-			console.log("web3hIntensity:", intensity);
+			console.log("webIntensity:", intensity);
 
 			intensity = Math.max(intensity, MinIntensity);
 			intensity = Math.min(intensity, MaxIntensity);
@@ -126,7 +130,7 @@ board.on("ready", function() {
 		board: this
 	});
 
-	// Pin only
+/*
 	var motion = new five.IR.Motion(7);
 
 	// "calibrated" occurs once, at the beginning of a session,
@@ -146,7 +150,7 @@ board.on("ready", function() {
 	motion.on("motionend", function() {
 	  console.log("motionend");
 	});
-
+*/
 
 	setInterval(renderCurrentIntensity, 60000);
 	renderCurrentIntensity();
