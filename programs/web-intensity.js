@@ -51,7 +51,7 @@ var Colors = [
 ];
 
 var MarkerPixelColor = { 
-	red: MaxColor,
+	red: 0, //MaxColor,
 	green: MaxColor,
 	blue: MaxColor
 };
@@ -60,8 +60,8 @@ var markerPosition = -1;
 var markerColor = MarkerPixelColor;
 var markerScale = 0.0;
 var markerFadeDirection = 1.0;
-var MarkerFadeDurationMillis = 1000;
-var MarkerFadeSteps = 10;
+var MarkerFadeDurationMillis = 1500;
+var MarkerFadeSteps = 50;
 
 var currentStripColor = Colors[0];
 
@@ -152,9 +152,9 @@ board.on("ready", function() {
 	setInterval(renderCurrentIntensity, 60000);
 	renderCurrentIntensity();
 
+	setInterval(renderMarker, MarkerFadeDurationMillis / MarkerFadeSteps);
 });
 
-	setInterval(renderMarker, MarkerFadeDurationMillis / MarkerFadeSteps);
 function limit(value, min, max) {
 	value = Math.min(value, max);
 	value = Math.max(value, min);
