@@ -59,7 +59,8 @@ var MarkerPixelColor = {
 var markerPosition = -1;
 var markerColor = MarkerPixelColor;
 var markerScale = 0.0;
-var markerFadeDirection = 1.0;
+var markerAngle = 0;
+var TwoPI = Math.PI * 2;
 var MarkerFadeDurationMillis = 1500;
 var MarkerFadeSteps = 50;
 
@@ -168,12 +169,14 @@ function capColor(color) {
 		blue: parseInt(limit(color.blue, 0, MaxColor))
 	};
 }
+
 function renderMarker() {
 
-	markerScale += markerFadeDirection * (1.0 / MarkerFadeSteps);
+	markerScale = (Math.cos(markerAngle) / 2.0) + 0.5;
+	markerAngle += (TwoPI / MarkerFadeSteps);
 
-	if (markerScale > 1.0 || markerScale < 0.0) {
-		markerFadeDirection *= -1;		
+	if (markerAngle > TwoPI) {
+		markerAngle -= TwoPI;
 	}
 
 	// Fade color between black and MarkerPixelColor
