@@ -56,6 +56,15 @@ var MarkerPixelColor = {
 	blue: MaxColor
 };
 
+var markerPosition = -1;
+var markerColor = MarkerPixelColor;
+var markerScale = 0.0;
+var markerFadeDirection = 1.0;
+var MarkerFadeDurationMillis = 1000;
+var MarkerFadeSteps = 10;
+
+var currentStripColor = Colors[0];
+
 var webIntensity = new Intensity("ConsumerRequest", 1);
 
 function renderCurrentIntensity() {
@@ -88,20 +97,13 @@ function renderCurrentIntensity() {
 			// Pick color from 0 - 4 given 0 - 1
 	
 			var colorIndex = parseInt(Math.round((Colors.length-1) * intensity));
-			var currentStripColor = Colors[colorIndex];
+			currentStripColor = Colors[colorIndex];
 
 			console.log("intensity normalized:", intensity, "setting color:", currentStripColor);
 			strip.color(rgb(currentStripColor));
 
-			var markerPixel = parseInt((strip.stripLength()-1) * intensity);
-			var markerColor = MarkerPixelColor;
-
-			console.log("setting marker at", markerPixel, markerColor);
-			setPixel(markerPixel-2, rgb(blendColor(markerColor, currentStripColor)));
-			setPixel(markerPixel-1, rgb(markerColor));
-			setPixel(markerPixel, rgb(markerColor));
-			setPixel(markerPixel+1, rgb(markerColor));
-			setPixel(markerPixel+2, rgb(blendColor(markerColor, currentStripColor)));
+			markerPosition = parseInt((strip.stripLength()-1) * intensity);
+			console.log("setting marker at", markerPosition);
 
 			strip.show();
 		}
@@ -149,7 +151,46 @@ board.on("ready", function() {
 
 	setInterval(renderCurrentIntensity, 60000);
 	renderCurrentIntensity();
+
 });
+
+	setInterval(renderMarker, MarkerFadeDurationMillis / MarkerFadeSteps);
+function limit(value, min, max) {
+	value = Math.min(value, max);
+	value = Math.max(value, min);
+	return value;
+}
+
+function capColor(color) {
+	return {
+		red: parseInt(limit(color.red, 0, MaxColor)),
+		green: parseInt(limit(color.green, 0, MaxColor)),
+		blue: parseInt(limit(color.blue, 0, MaxColor))
+	};
+}
+function renderMarker() {
+
+	markerScale += markerFadeDirection * (1.0 / MarkerFadeSteps);
+
+	if (markerScale > 1.0 || markerScale < 0.0) {
+		markerFadeDirection *= -1;		
+	}
+
+	// Fade color between black and MarkerPixelColor
+	markerColor = capColor({
+		red: MarkerPixelColor.red * markerScale,
+		blue: MarkerPixelColor.blue * markerScale,
+		green: MarkerPixelColor.green * markerScale
+	});
+
+	setPixel(markerPosition-2, rgb(blendColor(markerColor, currentStripColor)));
+	setPixel(markerPosition-1, rgb(markerColor));
+	setPixel(markerPosition, rgb(markerColor));
+	setPixel(markerPosition+1, rgb(markerColor));
+	setPixel(markerPosition+2, rgb(blendColor(markerColor, currentStripColor)));
+
+	strip.show();
+}
 
 function rgb(color) {
 	return "rgb(" + [parseInt(color.red), parseInt(color.green), parseInt(color.blue)].join(',') + ")";
