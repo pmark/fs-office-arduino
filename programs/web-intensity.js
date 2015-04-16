@@ -97,9 +97,11 @@ function renderCurrentIntensity() {
 			var markerColor = MarkerPixelColor;
 
 			console.log("setting marker at", markerPixel, markerColor);
-			setPixel(markerPixel-1, rgb(blendColor(markerColor, currentStripColor)));
+			setPixel(markerPixel-2, rgb(blendColor(markerColor, currentStripColor)));
+			setPixel(markerPixel-1, rgb(markerColor));
 			setPixel(markerPixel, rgb(markerColor));
-			setPixel(markerPixel+1, rgb(blendColor(markerColor, currentStripColor)));
+			setPixel(markerPixel+1, rgb(markerColor));
+			setPixel(markerPixel+2, rgb(blendColor(markerColor, currentStripColor)));
 
 			strip.show();
 		}
