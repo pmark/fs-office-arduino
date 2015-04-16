@@ -43,12 +43,15 @@ var Colors = [
 		green: MaxColor,
 		blue: 0
 	},
-	{ // hot: reddish
-		red: 255,
-		green: 140,
-		blue: 0
+	{ // hot: pink 
+		red: MaxColor,
+		green: 0,
+		blue: MaxColor
 	}	
 ];
+
+Colors.white = {red:MaxColor, green:MaxColor, blue:MaxColor};
+Colors.black = {red:0, green:0, blue:0};
 
 var MarkerPixelColor = { 
 	red: MaxColor,
@@ -62,8 +65,8 @@ var markerColor = MarkerPixelColor;
 var markerScale = 0.0;
 var markerAngle = 0;
 var TwoPI = Math.PI * 2;
-var MarkerFadeDurationMillis = 2600;
-var MarkerFadeSteps = 60;
+var MarkerFadeDurationMillis = 1300;
+var MarkerFadeSteps = 40;
 
 var currentStripColor = Colors[0];
 
@@ -94,6 +97,7 @@ function renderCurrentIntensity() {
 			intensity = Math.max(intensity, MinIntensity);
 			intensity = Math.min(intensity, MaxIntensity);
 			intensity /= (MaxIntensity - MinIntensity);
+
 			// intensity is between 0 and 1
 
 			// Pick color from 0 - 4 given 0 - 1
@@ -171,28 +175,31 @@ function capColor(color) {
 	};
 }
 
+var targetMarkerColorToggle = false;
+var targetMarkerColor = Colors.white;
 function renderMarker() {
 
 	markerScale = (Math.cos(markerAngle) / 2.0) + 0.5;
 	markerAngle += (TwoPI / MarkerFadeSteps);
 
-	if (markerAngle > TwoPI) {
-		markerAngle -= TwoPI;
+	if (markerAngle > TwoPI*2) {
+		markerAngle -= TwoPI*2;
+		//targetMarkerColorToggle = !targetMarkerColorToggle;
+		//targetMarkerColor = (targetMarkerColorToggle ? Colors.white : Colors.black);
 	}
 
-	// Fade color between white and target color
-	var targetColor = Colors[(Colors.length - 1) - colorIndex]; 
+	// Fade color to target color
 
 	markerColor = capColor({
-		red: targetColor.red * markerScale + (MaxColor * (1 - markerScale)),
-		blue: targetColor.blue * markerScale + (MaxColor * (1 - markerScale)),
-		green: targetColor.green * markerScale + (MaxColor * (1 - markerScale))
+		red: targetMarkerColor.red * markerScale + (currentStripColor.red * (1 - markerScale)),
+		green: targetMarkerColor.green * markerScale + (currentStripColor.blue * (1 - markerScale)),
+		blue: targetMarkerColor.blue * markerScale + (currentStripColor.green * (1 - markerScale))
 	});
 
-	setPixel(markerPosition-1, rgb(blendColor(markerColor, currentStripColor)));
-	//setPixel(markerPosition-1, rgb(markerColor));
+	setPixel(markerPosition-2, rgb(blendColor(markerColor, currentStripColor)));
+	setPixel(markerPosition-1, rgb(markerColor));
 	setPixel(markerPosition, rgb(markerColor));
-	//setPixel(markerPosition+1, rgb(markerColor));
+	setPixel(markerPosition+1, rgb(markerColor));
 	setPixel(markerPosition+1, rgb(blendColor(markerColor, currentStripColor)));
 
 	strip.show();
