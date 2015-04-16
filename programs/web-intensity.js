@@ -51,18 +51,19 @@ var Colors = [
 ];
 
 var MarkerPixelColor = { 
-	red: 0, //MaxColor,
+	red: MaxColor,
 	green: MaxColor,
 	blue: MaxColor
 };
 
+var colorIndex = 0;
 var markerPosition = -1;
 var markerColor = MarkerPixelColor;
 var markerScale = 0.0;
 var markerAngle = 0;
 var TwoPI = Math.PI * 2;
-var MarkerFadeDurationMillis = 1500;
-var MarkerFadeSteps = 50;
+var MarkerFadeDurationMillis = 2600;
+var MarkerFadeSteps = 60;
 
 var currentStripColor = Colors[0];
 
@@ -97,7 +98,7 @@ function renderCurrentIntensity() {
 
 			// Pick color from 0 - 4 given 0 - 1
 	
-			var colorIndex = parseInt(Math.round((Colors.length-1) * intensity));
+			colorIndex = parseInt(Math.round((Colors.length-1) * intensity));
 			currentStripColor = Colors[colorIndex];
 
 			console.log("intensity normalized:", intensity, "setting color:", currentStripColor);
@@ -179,18 +180,20 @@ function renderMarker() {
 		markerAngle -= TwoPI;
 	}
 
-	// Fade color between black and MarkerPixelColor
+	// Fade color between white and target color
+	var targetColor = Colors[(Colors.length - 1) - colorIndex]; 
+
 	markerColor = capColor({
-		red: MarkerPixelColor.red * markerScale,
-		blue: MarkerPixelColor.blue * markerScale,
-		green: MarkerPixelColor.green * markerScale
+		red: targetColor.red * markerScale + (MaxColor * (1 - markerScale)),
+		blue: targetColor.blue * markerScale + (MaxColor * (1 - markerScale)),
+		green: targetColor.green * markerScale + (MaxColor * (1 - markerScale))
 	});
 
-	setPixel(markerPosition-2, rgb(blendColor(markerColor, currentStripColor)));
-	setPixel(markerPosition-1, rgb(markerColor));
+	setPixel(markerPosition-1, rgb(blendColor(markerColor, currentStripColor)));
+	//setPixel(markerPosition-1, rgb(markerColor));
 	setPixel(markerPosition, rgb(markerColor));
-	setPixel(markerPosition+1, rgb(markerColor));
-	setPixel(markerPosition+2, rgb(blendColor(markerColor, currentStripColor)));
+	//setPixel(markerPosition+1, rgb(markerColor));
+	setPixel(markerPosition+1, rgb(blendColor(markerColor, currentStripColor)));
 
 	strip.show();
 }
